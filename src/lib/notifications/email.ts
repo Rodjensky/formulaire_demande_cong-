@@ -23,19 +23,25 @@ export async function sendEmail({
   smtpConfig,
 }: SendEmailOptions): Promise<{ success: boolean; id?: string; error?: string }> {
   // 1. Check if specific SMTP credentials are provided or deduce from recipient
-  let host = smtpConfig?.host || process.env.SMTP_HOST;
-  let port = smtpConfig?.port || parseInt(process.env.SMTP_PORT || "465", 10);
-  let user = smtpConfig?.user || process.env.SMTP_USER;
-  let pass = smtpConfig?.pass || process.env.SMTP_PASS;
-  let from = smtpConfig?.from || process.env.EMAIL_FROM || user || "Congés <noreply@welj-ht.com>";
+  let host = smtpConfig?.host || process.env.SMTP_HOST || process.env.TECHNOZI_SMTP_HOST;
+  let port = smtpConfig?.port || parseInt(process.env.SMTP_PORT || process.env.TECHNOZI_SMTP_PORT || "465", 10);
+  let user = smtpConfig?.user || process.env.SMTP_USER || process.env.TECHNOZI_SMTP_USER;
+  let pass = smtpConfig?.pass || process.env.SMTP_PASS || process.env.TECHNOZI_SMTP_PASS;
+  let from = smtpConfig?.from || process.env.EMAIL_FROM || process.env.TECHNOZI_EMAIL_FROM || user || "support@welj-ht.com";
 
-  // If sending to Welj (@welj-ht.com or Welj org) and specific Welj SMTP env is configured
-  if (to.includes("welj") && process.env.WELJ_SMTP_USER && process.env.WELJ_SMTP_PASS) {
+  // If sending to Welj (@welj-ht.com or Welj org)
+  if ((to.includes("welj") || smtpConfig?.user?.includes("welj")) && process.env.WELJ_SMTP_USER && process.env.WELJ_SMTP_PASS) {
     host = process.env.WELJ_SMTP_HOST || "smtp.gmail.com";
     port = parseInt(process.env.WELJ_SMTP_PORT || "465", 10);
     user = process.env.WELJ_SMTP_USER;
     pass = process.env.WELJ_SMTP_PASS;
     from = process.env.WELJ_EMAIL_FROM || user;
+  } else if ((to.includes("technozi") || smtpConfig?.user?.includes("technozi")) && process.env.TECHNOZI_SMTP_USER && process.env.TECHNOZI_SMTP_PASS) {
+    host = process.env.TECHNOZI_SMTP_HOST || "mail.technozi-ht.com";
+    port = parseInt(process.env.TECHNOZI_SMTP_PORT || "465", 10);
+    user = process.env.TECHNOZI_SMTP_USER;
+    pass = process.env.TECHNOZI_SMTP_PASS;
+    from = process.env.TECHNOZI_EMAIL_FROM || user;
   }
 
   // 1. Send via direct SMTP if credentials exist
