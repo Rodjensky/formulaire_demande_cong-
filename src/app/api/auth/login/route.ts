@@ -28,18 +28,23 @@ export async function POST(req: NextRequest) {
     }
 
     const { email, password } = parseResult.data;
+    const normalizedEmail = email.toLowerCase().trim();
     const db = getDb();
 
-    // 1. Find user by email
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email.toLowerCase()))
-      .limit(1);
+    // 1. Find user by email (or alias for superadmin)
+    const emailVariations = [normalizedEmail];
+    if (normalizedEmail.startsWith("superadmin@")) {
+      emailVariations.push("superadmin@platform.local", "superadmin@plateform.local", "superadmin@plateforme.local");
+    }
 
-    if (!user || user.status !== "ACTIVE") {
+    const allUsers = await db.select().from(users);
+    const user = allUsers.find(
+      (u) => emailVariations.includes(u.email.toLowerCase()) && u.status === "ACTIVE"
+    );
+
+    if (!user) {
       return NextResponse.json(
-        { error: "Identifiants invalides ou compte désactivé" },
+        { error: "Identifiants invalides ou compte introuvable" },
         { status: 401 }
       );
     }
@@ -99,7 +104,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error("Login API error:", err);
     return NextResponse.json(
-      { error: "Une erreur est survenue lors de la connexion" },
+      { error: `Erreur de connexion: ${err?.message || "Veuillez réessayer"}` },
       { status: 500 }
     );
   }
