@@ -16,13 +16,23 @@ export function getDb(d1Binding?: any) {
     return drizzleD1(d1Binding, { schema });
   }
 
-  // Fallback to local SQLite via LibSQL for Next.js Node dev & test environment
   if (!localDbInstance) {
-    const rawPath = process.env.LOCAL_DB_PATH || path.join(process.cwd(), "local.sqlite");
-    const normalizedPath = rawPath.replace(/\\/g, "/");
-    const url = normalizedPath.startsWith("file:") ? normalizedPath : `file:${normalizedPath}`;
-    const client = createClient({ url });
-    localDbInstance = drizzleLibSql(client, { schema });
+    const tursoUrl = process.env.TURSO_DATABASE_URL;
+    const tursoToken = process.env.TURSO_AUTH_TOKEN;
+
+    if (tursoUrl) {
+      const client = createClient({
+        url: tursoUrl,
+        authToken: tursoToken,
+      });
+      localDbInstance = drizzleLibSql(client, { schema });
+    } else {
+      const rawPath = process.env.LOCAL_DB_PATH || path.join(process.cwd(), "local.sqlite");
+      const normalizedPath = rawPath.replace(/\\/g, "/");
+      const url = normalizedPath.startsWith("file:") ? normalizedPath : `file:${normalizedPath}`;
+      const client = createClient({ url });
+      localDbInstance = drizzleLibSql(client, { schema });
+    }
   }
 
   return localDbInstance;
