@@ -58,13 +58,11 @@ export function LeaveRequestForm({ preselectedOrgId }: { preselectedOrgId?: stri
   useEffect(() => {
     async function loadOrgs() {
       try {
-        const res = await fetch("/api/public/organizations");
+        const res = await fetch("/api/public/organizations", { cache: "no-store" });
         const data = await res.json();
-        if (data.organizations) {
+        if (data.organizations && data.organizations.length > 0) {
           setOrganizations(data.organizations);
-          if (!organizationId && data.organizations.length > 0) {
-            setOrganizationId(data.organizations[0].id);
-          }
+          setOrganizationId((prev) => prev || data.organizations[0].id);
         }
       } catch (err) {
         console.error("Failed to load organizations:", err);
@@ -73,7 +71,7 @@ export function LeaveRequestForm({ preselectedOrgId }: { preselectedOrgId?: stri
       }
     }
     loadOrgs();
-  }, [organizationId]);
+  }, [preselectedOrgId]);
 
   // Automatic calculation of days
   useEffect(() => {
