@@ -15,9 +15,7 @@ export default function SubmitLeavePage() {
           Retour à l'accueil
         </Link>
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
-            <Calendar className="w-3.5 h-3.5" />
-          </div>
+          <img src="/icon.png" alt="Logo" className="w-6 h-6 object-contain" />
           <span className="text-xs font-semibold text-slate-700">Demande de Congé</span>
         </div>
       </div>

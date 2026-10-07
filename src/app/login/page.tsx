@@ -48,9 +48,11 @@ export default function LoginPage() {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-emerald-600 text-white rounded-xl flex items-center justify-center mx-auto mb-3 shadow-xs">
-            <Calendar className="w-6 h-6" />
-          </div>
+          <img
+            src="/icon.png"
+            alt="Logo"
+            className="w-16 h-16 mx-auto mb-3 drop-shadow-sm object-contain"
+          />
           <h1 className="text-2xl font-bold text-slate-900">Espace Administration</h1>
           <p className="text-xs text-slate-500 mt-1">
             Connectez-vous pour accéder au secrétariat ou à la gestion d'entreprise
@@ -131,7 +133,7 @@ export default function LoginPage() {
           <div className="mt-6 pt-5 border-t border-slate-100 text-center">
             <Link
               href="/"
-              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700"
+              className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
             >
               ← Retour au formulaire public de congé
             </Link>
