@@ -63,6 +63,8 @@ export function LeaveRequestForm({ preselectedOrgId }: { preselectedOrgId?: stri
         if (data.organizations && data.organizations.length > 0) {
           setOrganizations(data.organizations);
           setOrganizationId((prev) => prev || data.organizations[0].id);
+        } else if (data.error) {
+          console.error("Server returned error:", data.error);
         }
       } catch (err) {
         console.error("Failed to load organizations:", err);

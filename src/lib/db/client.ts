@@ -9,7 +9,7 @@ let localDbInstance: ReturnType<typeof drizzleLibSql<typeof schema>> | null = nu
 /**
  * Obtain Drizzle database instance.
  * In Cloudflare runtime, `d1Binding` is passed (e.g. env.DB).
- * In Node.js / local dev / tests, `@libsql/client` is used with a local file or in-memory sqlite.
+ * In Node.js / Vercel Serverless / local dev / tests, `@libsql/client` connects to Turso or local SQLite.
  */
 export function getDb(d1Binding?: any) {
   if (d1Binding) {
@@ -17,24 +17,29 @@ export function getDb(d1Binding?: any) {
   }
 
   if (!localDbInstance) {
-    const tursoUrl =
+    const rawUrl =
       process.env.TURSO_DATABASE_URL ||
       process.env.STORAGE_URL ||
       process.env.TURSO_URL ||
       process.env.DATABASE_URL;
-    const tursoToken =
+    const rawToken =
       process.env.TURSO_AUTH_TOKEN ||
       process.env.STORAGE_AUTH_TOKEN ||
       process.env.TURSO_TOKEN ||
       process.env.DATABASE_AUTH_TOKEN;
 
+    const tursoUrl = rawUrl ? rawUrl.trim().replace(/^["']|["']$/g, "") : undefined;
+    const tursoToken = rawToken ? rawToken.trim().replace(/^["']|["']$/g, "") : undefined;
+
     if (tursoUrl) {
+      console.log(`[DB] Initializing LibSQL client for URL: ${tursoUrl.replace(/:[^@]+@/, ":***@")}`);
       const client = createClient({
         url: tursoUrl,
         authToken: tursoToken,
       });
       localDbInstance = drizzleLibSql(client, { schema });
     } else {
+      console.log("[DB] No TURSO_DATABASE_URL found, falling back to local file.");
       const rawPath = process.env.LOCAL_DB_PATH || path.join(process.cwd(), "local.sqlite");
       const normalizedPath = rawPath.replace(/\\/g, "/");
       const url = normalizedPath.startsWith("file:") ? normalizedPath : `file:${normalizedPath}`;
