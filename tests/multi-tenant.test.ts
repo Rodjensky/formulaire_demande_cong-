@@ -8,7 +8,7 @@ import {
   rejectLeaveRequest,
   getLeaveRequestByToken,
 } from "../src/lib/services/leave-requests";
-import { organizations, users, employees } from "../src/db/schema";
+import { organizations, users } from "../src/db/schema";
 import { hashPassword } from "../src/lib/auth/password";
 
 describe("Multi-Tenant Isolation Test Suite", () => {

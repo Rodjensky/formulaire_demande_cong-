@@ -26,12 +26,6 @@ export function AdminSidebar({ role, organizationName }: AdminSidebarProps) {
       icon: FileText,
       roles: ["ORGANIZATION_ADMIN", "SECRETARY"],
     },
-    {
-      href: "/admin/employees",
-      label: "Employés",
-      icon: Users,
-      roles: ["ORGANIZATION_ADMIN"],
-    },
   ];
 
   const allowedNav = navItems.filter(

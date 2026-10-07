@@ -2,7 +2,6 @@ import { getDb } from "@/lib/db/client";
 import {
   leaveRequests,
   auditLogs,
-  employees,
   organizations,
   LeaveRequest,
   InsertLeaveRequest,
@@ -36,19 +35,7 @@ export async function createLeaveRequest(
     throw new Error("Organisation introuvable ou inactive");
   }
 
-  // 2. Check if matching employee in directory (optional linkage)
-  const [matchingEmployee] = await db
-    .select()
-    .from(employees)
-    .where(
-      and(
-        eq(employees.organizationId, input.organizationId),
-        eq(employees.employeeNumber, input.employeeNumber)
-      )
-    )
-    .limit(1);
-
-  // 3. Count total global requests to generate globally unique request number
+  // 2. Count total global requests to generate globally unique request number
   const countResult = await db
     .select({ count: sql<number>`count(*)` })
     .from(leaveRequests);
@@ -72,7 +59,7 @@ export async function createLeaveRequest(
       .limit(1);
   }
 
-  // 4. Generate random secure access token & calculate SHA-256 hash
+  // 3. Generate random secure access token & calculate SHA-256 hash
   const rawAccessToken = generateSecureToken();
   const tokenHash = await hashToken(rawAccessToken);
 
@@ -81,7 +68,6 @@ export async function createLeaveRequest(
   const insertData: InsertLeaveRequest = {
     id: newRequestId,
     organizationId: input.organizationId,
-    employeeId: matchingEmployee?.id || null,
     requestNumber,
     firstName: input.firstName,
     lastName: input.lastName,

@@ -7,7 +7,7 @@ import {
   approveLeaveRequest,
   rejectLeaveRequest,
 } from "../src/lib/services/leave-requests";
-import { organizations, users, employees, auditLogs } from "../src/db/schema";
+import { organizations, users, auditLogs } from "../src/db/schema";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "../src/lib/auth/password";
 
@@ -85,23 +85,8 @@ describe("Leave Request Lifecycle & Workflow Tests", () => {
     expect(res2.leaveRequest.requestNumber).toBe(`CONG-${currentYear}-0002`);
   });
 
-  it("Preserves employee snapshot even if employee directory record changes later", async () => {
-    // 1. Create employee in directory
-    await db.insert(employees).values({
-      id: "emp-alice",
-      organizationId: orgId,
-      employeeNumber: "EMP-100",
-      firstName: "Alice",
-      lastName: "Smith",
-      department: "Marketing Junior",
-      position: "Junior Assistant",
-      phone: "+22501020304",
-      status: "ACTIVE",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    });
-
-    // 2. Submit request
+  it("Preserves complete employee information snapshot directly on leave request", async () => {
+    // Submit request with full employee details
     const req = await createLeaveRequest(
       {
         organizationId: orgId,
@@ -114,25 +99,23 @@ describe("Leave Request Lifecycle & Workflow Tests", () => {
         startDate: "2026-10-10",
         endDate: "2026-10-12",
         requestedDays: 3,
+        replacementName: "Paul Koffi",
         contactPhone: "+22501020304",
+        contactEmail: "alice.smith@example.com",
       },
       undefined,
       db
     );
 
-    // 3. Promote employee later in the directory
-    await db
-      .update(employees)
-      .set({
-        department: "Marketing Executive",
-        position: "Chief Marketing Officer",
-      })
-      .where(eq(employees.id, "emp-alice"));
-
-    // 4. Verify original request snapshot remains unmutated
+    // Verify all employee snapshot details are stored accurately
     const fetchedReq = await getLeaveRequestById(req.leaveRequest.id, orgId, db);
+    expect(fetchedReq?.firstName).toBe("Alice");
+    expect(fetchedReq?.lastName).toBe("Smith");
+    expect(fetchedReq?.employeeNumber).toBe("EMP-100");
     expect(fetchedReq?.department).toBe("Marketing Junior");
     expect(fetchedReq?.position).toBe("Junior Assistant");
+    expect(fetchedReq?.replacementName).toBe("Paul Koffi");
+    expect(fetchedReq?.contactPhone).toBe("+22501020304");
   });
 
   it("Performs atomic approval and transitions status to APPROVED", async () => {

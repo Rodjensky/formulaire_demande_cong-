@@ -9,7 +9,7 @@ interface PlatformStats {
   totalOrganizations: number;
   activeOrganizations: number;
   disabledOrganizations: number;
-  totalEmployees: number;
+  approvedRequests: number;
   totalRequests: number;
   recentRequests: any[];
 }
@@ -80,20 +80,20 @@ export default function SuperAdminOverviewPage() {
           </div>
         </div>
 
-        {/* TOTAL EMPLOYEES */}
+        {/* APPROVED REQUESTS */}
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Total Employés
+              Congés Approuvés
             </span>
             <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <Users className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 text-3xl font-bold text-slate-900">
-            {loading ? "..." : stats?.totalEmployees}
+            {loading ? "..." : stats?.approvedRequests}
           </div>
-          <div className="mt-2 text-xs text-slate-500">Sur l'ensemble des entreprises</div>
+          <div className="mt-2 text-xs text-slate-500">Total des validations accordées</div>
         </div>
 
         {/* TOTAL REQUESTS */}

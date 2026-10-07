@@ -14,7 +14,7 @@ interface OrganizationItem {
   phone?: string | null;
   status: "ACTIVE" | "DISABLED";
   createdAt: number;
-  employeeCount: number;
+  pendingCount: number;
   requestCount: number;
 }
 
@@ -100,8 +100,8 @@ export default function SuperAdminOrganizationsPage() {
                 <tr>
                   <th className="px-5 py-3">Entreprise</th>
                   <th className="px-5 py-3">Slug</th>
-                  <th className="px-5 py-3">Employés</th>
-                  <th className="px-5 py-3">Demandes</th>
+                  <th className="px-5 py-3">En attente</th>
+                  <th className="px-5 py-3">Total Demandes</th>
                   <th className="px-5 py-3">Statut</th>
                   <th className="px-5 py-3">Créée le</th>
                   <th className="px-5 py-3 text-right">Action</th>
@@ -115,8 +115,8 @@ export default function SuperAdminOrganizationsPage() {
                       <div className="text-xs text-slate-400">{org.email || "Sans email"}</div>
                     </td>
                     <td className="px-5 py-3.5 font-mono text-xs text-slate-600">{org.slug}</td>
-                    <td className="px-5 py-3.5 text-xs text-slate-700 font-medium">
-                      {org.employeeCount} employés
+                    <td className="px-5 py-3.5 text-xs text-amber-700 font-medium">
+                      {org.pendingCount} en attente
                     </td>
                     <td className="px-5 py-3.5 text-xs text-slate-700 font-medium">
                       {org.requestCount} demandes

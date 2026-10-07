@@ -48,35 +48,7 @@ export const users = sqliteTable(
 );
 
 // ----------------------------------------------------
-// EMPLOYEES (Directory)
-// ----------------------------------------------------
-export const employees = sqliteTable(
-  "employees",
-  {
-    id: text("id").primaryKey(),
-    organizationId: text("organization_id")
-      .notNull()
-      .references(() => organizations.id),
-    employeeNumber: text("employee_number").notNull(),
-    firstName: text("first_name").notNull(),
-    lastName: text("last_name").notNull(),
-    department: text("department").notNull(),
-    position: text("position").notNull(),
-    phone: text("phone").notNull(),
-    email: text("email"),
-    status: text("status", { enum: ["ACTIVE", "INACTIVE"] }).notNull().default("ACTIVE"),
-    createdAt: integer("created_at").notNull(),
-    updatedAt: integer("updated_at").notNull(),
-  },
-  (table) => [
-    index("emp_org_idx").on(table.organizationId),
-    index("emp_org_number_idx").on(table.organizationId, table.employeeNumber),
-    index("emp_status_idx").on(table.status),
-  ]
-);
-
-// ----------------------------------------------------
-// LEAVE REQUESTS
+// LEAVE REQUESTS (All employee & leave details captured directly)
 // ----------------------------------------------------
 export const leaveRequests = sqliteTable(
   "leave_requests",
@@ -85,7 +57,6 @@ export const leaveRequests = sqliteTable(
     organizationId: text("organization_id")
       .notNull()
       .references(() => organizations.id),
-    employeeId: text("employee_id").references(() => employees.id),
     requestNumber: text("request_number").notNull().unique(), // e.g. CONG-2026-0001
     firstName: text("first_name").notNull(),
     lastName: text("last_name").notNull(),
@@ -123,7 +94,6 @@ export const leaveRequests = sqliteTable(
     uniqueIndex("leave_token_hash_idx").on(table.employeeAccessTokenHash),
     index("leave_org_idx").on(table.organizationId),
     index("leave_org_status_idx").on(table.organizationId, table.status),
-    index("leave_emp_idx").on(table.employeeId),
     index("leave_created_idx").on(table.createdAt),
   ]
 );
@@ -198,7 +168,6 @@ export const notificationLogs = sqliteTable(
 // ----------------------------------------------------
 export const organizationsRelations = relations(organizations, ({ many }) => ({
   users: many(users),
-  employees: many(employees),
   leaveRequests: many(leaveRequests),
   auditLogs: many(auditLogs),
   notificationLogs: many(notificationLogs),
@@ -212,22 +181,10 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   decisions: many(leaveRequests),
 }));
 
-export const employeesRelations = relations(employees, ({ one, many }) => ({
-  organization: one(organizations, {
-    fields: [employees.organizationId],
-    references: [organizations.id],
-  }),
-  leaveRequests: many(leaveRequests),
-}));
-
 export const leaveRequestsRelations = relations(leaveRequests, ({ one, many }) => ({
   organization: one(organizations, {
     fields: [leaveRequests.organizationId],
     references: [organizations.id],
-  }),
-  employee: one(employees, {
-    fields: [leaveRequests.employeeId],
-    references: [employees.id],
   }),
   decidedByUser: one(users, {
     fields: [leaveRequests.decidedBy],
@@ -265,9 +222,6 @@ export type InsertOrganization = typeof organizations.$inferInsert;
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
-
-export type Employee = typeof employees.$inferSelect;
-export type InsertEmployee = typeof employees.$inferInsert;
 
 export type LeaveRequest = typeof leaveRequests.$inferSelect;
 export type InsertLeaveRequest = typeof leaveRequests.$inferInsert;

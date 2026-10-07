@@ -1,6 +1,6 @@
 import { getDb } from "@/lib/db/client";
-import { organizations, users, leaveRequests, employees, Organization, User } from "@/db/schema";
-import { eq, desc, sql } from "drizzle-orm";
+import { organizations, users, leaveRequests, Organization, User } from "@/db/schema";
+import { eq, desc, sql, and } from "drizzle-orm";
 import { CreateOrganizationInput } from "@/lib/validation/schemas";
 import { hashPassword } from "@/lib/auth/password";
 
@@ -22,23 +22,28 @@ export async function listAllOrganizationsForSuperAdmin(dbInstance?: any) {
   const db = dbInstance || getDb();
   const orgs = await db.select().from(organizations).orderBy(desc(organizations.createdAt));
 
-  // Augment with employee count and request count
+  // Augment with request counts
   const results = await Promise.all(
     orgs.map(async (org: Organization) => {
-      const [empCount] = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(employees)
-        .where(eq(employees.organizationId, org.id));
-
       const [reqCount] = await db
         .select({ count: sql<number>`count(*)` })
         .from(leaveRequests)
         .where(eq(leaveRequests.organizationId, org.id));
 
+      const [pendingCount] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(leaveRequests)
+        .where(
+          and(
+            eq(leaveRequests.organizationId, org.id),
+            eq(leaveRequests.status, "PENDING")
+          )
+        );
+
       return {
         ...org,
-        employeeCount: empCount?.count || 0,
         requestCount: reqCount?.count || 0,
+        pendingCount: pendingCount?.count || 0,
       };
     })
   );
@@ -58,7 +63,10 @@ export async function getSuperAdminPlatformStats(dbInstance?: any) {
     .select({ count: sql<number>`count(*)` })
     .from(organizations)
     .where(eq(organizations.status, "DISABLED"));
-  const [totalEmployeesRes] = await db.select({ count: sql<number>`count(*)` }).from(employees);
+  const [approvedRequestsRes] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(leaveRequests)
+    .where(eq(leaveRequests.status, "APPROVED"));
   const [totalRequestsRes] = await db.select({ count: sql<number>`count(*)` }).from(leaveRequests);
 
   const recentRequests = await db
@@ -78,7 +86,7 @@ export async function getSuperAdminPlatformStats(dbInstance?: any) {
     totalOrganizations: totalOrgsRes?.count || 0,
     activeOrganizations: activeOrgsRes?.count || 0,
     disabledOrganizations: disabledOrgsRes?.count || 0,
-    totalEmployees: totalEmployeesRes?.count || 0,
+    approvedRequests: approvedRequestsRes?.count || 0,
     totalRequests: totalRequestsRes?.count || 0,
     recentRequests,
   };
