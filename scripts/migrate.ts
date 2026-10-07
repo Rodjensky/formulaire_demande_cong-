@@ -5,7 +5,7 @@ export async function runMigrations(dbInstance?: any) {
   const db = dbInstance || getDb();
   console.log("Creating database tables and indexes...");
 
-  // Drop old tables to rebuild clean schema
+  // Drop old tables to rebuild clean schemas
   await db.run(sql`DROP TABLE IF EXISTS notification_logs`);
   await db.run(sql`DROP TABLE IF EXISTS audit_logs`);
   await db.run(sql`DROP TABLE IF EXISTS leave_requests`);
