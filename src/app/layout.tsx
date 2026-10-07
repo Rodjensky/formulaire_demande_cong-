@@ -4,6 +4,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Plateforme de Gestion des Demandes de Congé",
   description: "Plateforme multi-entreprises moderne et sécurisée de gestion des congés",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({
