@@ -173,54 +173,5 @@ export async function notifyEmployeeDecision(
     }
   }
 
-  // 2. Send optional Email
-  if (request.contactEmail) {
-    const { subject, html } = generateDecisionEmployeeEmail({
-      requestNumber: request.requestNumber,
-      employeeName: `${request.firstName} ${request.lastName}`,
-      status: request.status,
-      startDate: request.startDate,
-      endDate: request.endDate,
-      rejectionReason: request.rejectionReason || undefined,
-      viewUrl,
-    });
-
-    const emailRes = await sendEmail({
-      to: request.contactEmail,
-      subject,
-      html,
-    });
-
-    emailSent = emailRes.success;
-
-    await db.insert(notificationLogs).values({
-      id: `notif-${crypto.randomUUID()}`,
-      organizationId: request.organizationId,
-      leaveRequestId: request.id,
-      channel: "EMAIL",
-      recipient: request.contactEmail,
-      notificationType: request.status === "APPROVED" ? "REQUEST_APPROVED" : "REQUEST_REJECTED",
-      status: emailRes.success ? "SENT" : "FAILED",
-      providerMessageId: emailRes.id || null,
-      errorMessage: emailRes.error || null,
-      sentAt: emailRes.success ? now : null,
-      createdAt: now,
-    });
-
-    if (!emailRes.success) {
-      await db.insert(auditLogs).values({
-        id: `audit-${crypto.randomUUID()}`,
-        organizationId: request.organizationId,
-        userId: "SYSTEM",
-        leaveRequestId: request.id,
-        action: "NOTIFICATION_FAILED",
-        oldStatus: request.status,
-        newStatus: request.status,
-        metadata: JSON.stringify({ channel: "EMAIL", error: emailRes.error }),
-        createdAt: now,
-      });
-    }
-  }
-
-  return { whatsappSent, emailSent };
+  return { whatsappSent, emailSent: false };
 }

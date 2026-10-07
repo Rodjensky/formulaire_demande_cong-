@@ -76,7 +76,7 @@ export function DecisionModal({
             </p>
             <p className="text-xs mt-1 text-slate-600">
               {isApprove
-                ? "Êtes-vous sûr de vouloir approuver cette demande de congé ? Une notification WhatsApp et un email seront envoyés à l'employé."
+                ? "Êtes-vous sûr de vouloir approuver cette demande de congé ? Une notification WhatsApp sera envoyée à l'employé."
                 : "Le refus d'une demande de congé est définitif et nécessite une raison obligatoire qui sera transmise à l'employé."}
             </p>
           </div>

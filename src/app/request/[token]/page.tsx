@@ -13,6 +13,9 @@ import {
   AlertCircle,
   ArrowLeft,
   FileText,
+  Printer,
+  Download,
+  ShieldCheck,
 } from "lucide-react";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 
@@ -43,6 +46,12 @@ export default function EmployeeRequestStatusPage() {
     }
     loadStatus();
   }, [token]);
+
+  const handlePrint = () => {
+    if (typeof window !== "undefined") {
+      window.print();
+    }
+  };
 
   if (loading) {
     return (
@@ -83,10 +92,10 @@ export default function EmployeeRequestStatusPage() {
   const isPending = request.status === "PENDING";
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6">
-      <div className="max-w-xl mx-auto space-y-6">
-        {/* HEADER */}
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 print:bg-white print:p-0">
+      <div className="max-w-xl mx-auto space-y-6 print:max-w-full">
+        {/* TOP HEADER (Hidden on print) */}
+        <div className="flex items-center justify-between print:hidden">
           <Link
             href="/"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
@@ -94,11 +103,43 @@ export default function EmployeeRequestStatusPage() {
             <ArrowLeft className="w-3.5 h-3.5" />
             Accueil
           </Link>
-          <div className="text-xs font-medium text-slate-400">Suivi de demande</div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handlePrint}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg shadow-2xs transition-colors"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              Imprimer / PDF
+            </button>
+            <div className="text-xs font-medium text-slate-400">Suivi de demande</div>
+          </div>
         </div>
 
-        {/* STATUS CARD */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+        {/* STATUS CARD / PRINTABLE ATTESTATION */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6 print:border-none print:shadow-none print:p-0">
+          
+          {/* PRINT-ONLY OFFICIAL HEADER */}
+          <div className="hidden print:block border-b-2 border-slate-800 pb-4 mb-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <h1 className="text-xl font-bold text-slate-900 uppercase tracking-tight">
+                  {request.organizationName || "Entreprise"}
+                </h1>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Direction des Ressources Humaines • Service du Personnel
+                </p>
+              </div>
+              <div className="text-right">
+                <span className="text-xs font-bold text-slate-700 uppercase">
+                  Attestation Officielle
+                </span>
+                <p className="text-[10px] text-slate-400">
+                  Éditée le {new Date().toLocaleDateString("fr-FR")}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Header with Request Number and Status */}
           <div className="border-b border-slate-100 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
@@ -208,9 +249,38 @@ export default function EmployeeRequestStatusPage() {
             </div>
           </div>
 
+          {/* DOWNLOAD / PRINT PDF BUTTON (Primary Action) */}
+          <div className="pt-2 print:hidden">
+            <button
+              onClick={handlePrint}
+              className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              Télécharger l'attestation en PDF / Imprimer
+            </button>
+          </div>
+
+          {/* PRINT-ONLY SIGNATURE AND STAMP SECTION */}
+          <div className="hidden print:block pt-8 border-t border-slate-200 mt-8">
+            <div className="grid grid-cols-2 gap-8 text-xs text-slate-600">
+              <div>
+                <p className="font-semibold text-slate-800">Signature de l'employé :</p>
+                <div className="mt-8 border-b border-dashed border-slate-300 w-48" />
+              </div>
+              <div className="text-right">
+                <p className="font-semibold text-slate-800">Visa & Cachet de la Direction :</p>
+                <div className="mt-2 text-[10px] text-slate-400">
+                  Document officiel généré électroniquement • Réf: {request.requestNumber}
+                </div>
+                <div className="mt-8 border-b border-dashed border-slate-300 w-48 ml-auto" />
+              </div>
+            </div>
+          </div>
+
           <div className="pt-4 border-t border-slate-100 text-center">
             <p className="text-[11px] text-slate-400">
               Soumis le {new Date(request.submittedAt).toLocaleString("fr-FR")}
+              {request.decidedAt && ` • Traité le ${new Date(request.decidedAt).toLocaleString("fr-FR")}`}
             </p>
           </div>
         </div>
