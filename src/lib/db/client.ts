@@ -17,8 +17,16 @@ export function getDb(d1Binding?: any) {
   }
 
   if (!localDbInstance) {
-    const tursoUrl = process.env.TURSO_DATABASE_URL;
-    const tursoToken = process.env.TURSO_AUTH_TOKEN;
+    const tursoUrl =
+      process.env.TURSO_DATABASE_URL ||
+      process.env.STORAGE_URL ||
+      process.env.TURSO_URL ||
+      process.env.DATABASE_URL;
+    const tursoToken =
+      process.env.TURSO_AUTH_TOKEN ||
+      process.env.STORAGE_AUTH_TOKEN ||
+      process.env.TURSO_TOKEN ||
+      process.env.DATABASE_AUTH_TOKEN;
 
     if (tursoUrl) {
       const client = createClient({
